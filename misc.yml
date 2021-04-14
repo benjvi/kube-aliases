@@ -1,0 +1,8 @@
+klean-yaml() {
+  yq -y "{ apiVersion, kind, metadata: { name: .metadata.name, namespace: .metadata.namespace, labels:.metadata.labels, annotations: .metadata.annotations }, spec }"
+}
+
+k-disable-default-sa-automount() {
+  # TODO: uses bbjq which I didn't define yet here
+  k get serviceaccount -A -o json | jq "[.items[] | select(.metadata.name == \"default\")]" | bbjq '(map #(:out (shell/sh "kubectl" "patch" "sa" (get-in % ["metadata" "name"]) "-n" (get-in % ["metadata" "namespace"]) "--type" "merge" "--patch" "automountServiceAccountToken: false")) <>)'
+}
